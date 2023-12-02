@@ -1,8 +1,8 @@
 {
-    "name": "movieDatabase",
+    "name": "employee-tracker",
     "version": "1.0.0",
-    "description": "titles and reviews of your favourite Christmas movies",
-    "main": "index.js",
+    "description": "employee records",
+    "main": "server.js",
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1"
     },
