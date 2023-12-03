@@ -34,7 +34,7 @@ const db = mysql.createConnection(
 //import inquirer
 const inquirer = require("inquirer");
 
-//
+//create menu choices array
 const menuChoices =
     [
         "View All Employees",
@@ -46,7 +46,6 @@ const menuChoices =
         "Add Department"
     ];
 
-    console.log(menuChoices[0]);
 //inquirer asks the prompts and returns a response
 inquirer
     .prompt([
@@ -57,35 +56,79 @@ inquirer
             choices: menuChoices,
         },
     ])
-    .then((menuChoice) => {
-        console.log(menuChoice);
-        console.log(menuChoices[0]);
-        if (menuChoice === menuChoices[0]) {
-            // Query database
-            db.query('SELECT * FROM department', function (err, results) {
-            err ? console.log(err) : console.log(results); 
-        }
-        else if (menuChoice === menuChoices[3]) {
-            db.query('SELECT * FROM roles', function(err, results) {
-                err ? console.log(err) : console.log(results);
-            })
-        });
-        }
-    })
+    .then((response) => {
+        if (response.menuChoice === menuChoices[0]) {
+            // Query 
 
+        } 
+        // other conditions
+        else if (response.menuChoices === menuChoices[3]) {
+
+        }
+    });
+
+//write queries to test outside of promise
 db.query('SELECT * FROM roles', function (err, results) {
     err ? console.log(err) : console.log(results);
 });
 
+//ROUTES FOR REQUESTS
+
+//get all departments in table format
+app.get("/department", (req, res) => {
+    const sql = `SELECT * FROM department`;
+    
+    db.query(sql, function (err, results) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: "success",
+            data: results,
+        });
+    });
+});
+
+//get all roles
+app.get("/roles", (req, res) => {
+    const sql = `SELECT * FROM roles`;
+
+    db.query('SELECT * FROM roles', function (err, results) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: "success",
+            data: results,
+        });
+    });
+});
+
+// get all employees
+app.get("/employee", (req, res) => { // ... your code to fetch employees ... }); 
+    const sql = `SELECT * FROM employee`;
+
+    db.query(sql, function (err, results) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: "success",
+            data: body,
+        });
+    });
+});
 
 
 
-//     // Default response for any other request (Not Found)
-// app.use((req, res) => {
-//     res.status(404).end();
-//   });
+    // Default response for any other request (Not Found)
+app.use((req, res) => {
+    res.status(404).end();
+  });
   
-//   app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-//   });
-  
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
