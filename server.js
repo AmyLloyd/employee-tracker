@@ -45,50 +45,71 @@ const menuChoices =
         "View All Departments",
         "Add Department"
     ];
+//object for inquirer prompt
+const question = 
+    [{
+        type: "list",
+        message: "What would you like to do?",
+        name: "menuChoice",
+        choices: menuChoices,
+    }];
 
-//inquirer asks the prompts and returns a response
-inquirer
-    .prompt([
-        {
-            type: "list",
-            message: "What would you like to do? (Use arrow keys)",
-            name: "menuChoice",
-            choices: menuChoices,
-        },
-    ])
-    .then((response) => {
-        if (response.menuChoice === menuChoices[0]) {
-            // Query 
 
-        } 
-        // other conditions
-        else if (response.menuChoices === menuChoices[3]) {
 
+//create main function
+async function main() {
+    try {
+        //userChoice is response to inquirer prompt
+        const userChoice = await inquirer.prompt(question);
+
+        let endPoint;
+        switch (userChoice.menuChoice) {
+            case "View All Employees":
+                endPoint = "employee"
+                break;
+            case "View All Roles":
+                endPoint = "roles"
+                break;
+            case "View All Departments":
+                endPoint = "department"
+                break;
+        
+            default:
+                endPoint = "employee";
+                break;
         }
-    });
+        await queryDatabase(endPoint);
+    
+    } catch (err) {
 
-//write queries to test outside of promise
-db.query('SELECT * FROM roles', function (err, results) {
-    err ? console.log(err) : console.log(results);
-});
+    }
+};
+
+main();
 
 //ROUTES FOR REQUESTS
+//query database for get all of a selected endPoint in table format
 
-//get all departments in table format
-app.get("/department", (req, res) => {
-    const sql = `SELECT * FROM department`;
-    
-    db.query(sql, function (err, results) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: "success",
-            data: results,
+const queryDatabase = (endPoint) => {
+    app.get(`/${endPoint}`, (req, res) => {
+        const sql = `SELECT * FROM ${endPoint}`;
+        
+        db.query(sql, function (err, results) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.status(200).json(`${req.method} request received to get all ${endPoint}`);
+            res.json({
+                message: "success",
+                data: results,
+            });
+
+            // Log our request to the terminal
+            console.info(`${req.method} request received to get ${endPoint}`);  
         });
-    });
-});
+    });   
+}
 
 //get all roles
 app.get("/roles", (req, res) => {
@@ -121,8 +142,6 @@ app.get("/employee", (req, res) => { // ... your code to fetch employees ... });
         });
     });
 });
-
-
 
     // Default response for any other request (Not Found)
 app.use((req, res) => {

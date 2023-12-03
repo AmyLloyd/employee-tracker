@@ -5,6 +5,6 @@ SELECT * FROM department;
 
 SELECT * FROM roles;
 
---show all employees --
+-- show all employees --
 SELECT * FROM employee
 
