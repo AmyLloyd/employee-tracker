@@ -31,3 +31,61 @@ const db = mysql.createConnection(
 );
 
 
+//import inquirer
+const inquirer = require("inquirer");
+
+//
+const menuChoices =
+    [
+        "View All Employees",
+        "Add Employee",
+        "Update Employee Role",
+        "View All Roles",
+        "Add Role",
+        "View All Departments",
+        "Add Department"
+    ];
+
+    console.log(menuChoices[0]);
+//inquirer asks the prompts and returns a response
+inquirer
+    .prompt([
+        {
+            type: "list",
+            message: "What would you like to do? (Use arrow keys)",
+            name: "menuChoice",
+            choices: menuChoices,
+        },
+    ])
+    .then((menuChoice) => {
+        console.log(menuChoice);
+        console.log(menuChoices[0]);
+        if (menuChoice === menuChoices[0]) {
+            // Query database
+            db.query('SELECT * FROM department', function (err, results) {
+            err ? console.log(err) : console.log(results); 
+        }
+        else if (menuChoice === menuChoices[3]) {
+            db.query('SELECT * FROM roles', function(err, results) {
+                err ? console.log(err) : console.log(results);
+            })
+        });
+        }
+    })
+
+db.query('SELECT * FROM roles', function (err, results) {
+    err ? console.log(err) : console.log(results);
+});
+
+
+
+
+//     // Default response for any other request (Not Found)
+// app.use((req, res) => {
+//     res.status(404).end();
+//   });
+  
+//   app.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
+  
