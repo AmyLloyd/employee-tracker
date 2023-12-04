@@ -56,50 +56,51 @@ const question =
 
 
 
-// //create main function
-// async function main() {
-//     try {
-//         //userChoice is response to inquirer prompt
-//         const userChoice = await inquirer.prompt(question);
+//create main function
+async function main() {
+    try {
+        //userChoice is response to inquirer prompt
+        const userChoice = await inquirer.prompt(question);
 
-//         let endPoint;
-//         switch (userChoice.menuChoice) {
-//             case "View All Employees":
-//                 endPoint = "employee"
-//                 break;
-//             case "View All Roles":
-//                 endPoint = "roles"
-//                 break;
-//             case "View All Departments":
-//                 endPoint = "department"
-//                 break;
+        let endPoint;
+        switch (userChoice.menuChoice) {
+            case "View All Employees":
+                endPoint = "employee"
+                break;
+            case "View All Roles":
+                endPoint = "roles"
+                break;
+            case "View All Departments":
+                endPoint = "department"
+                break;
         
-//             default:
-//                 endPoint = "employee";
-//                 break;
-//         }
-//         await queryDatabase(endPoint);
+            default:
+                endPoint = "employee";
+                break;
+        }
+        await queryDatabase(endPoint);
     
-//     } catch (err) {
+    } catch (err) {
 
-//     }
-// };
+    }
+};
 
-// main();
+main();
 
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
-let endPoint = 'departments';
 
 const queryDatabase = (endPoint) => {
+    console.log(endPoint, 'endPoint under function declaration');
     app.get(`/${endPoint}`, (req, res) => {
         
-        db.query(`SELECT * FROM ${endPoint}`), function (err, results) {
+        db.query(`SELECT * FROM roles`), function (err, results) {
+            console.log(endPoint, "endPoint at dbquery");
+            console.log(results);
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
             }
-            res.status(200).json(`${req.method} request received to get all ${endPoint}`);
             res.json({
                 message: "success",
                 data: results,
@@ -111,7 +112,7 @@ const queryDatabase = (endPoint) => {
     });   
 }
 
-queryDatabase(endPoint);
+
 // //get all departments
 // app.get("/departments", (req, res) => {
 //     db.query(`SELECT * FROM department`, function (err, results) {
