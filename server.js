@@ -56,45 +56,45 @@ const question =
 
 
 
-//create main function
-async function main() {
-    try {
-        //userChoice is response to inquirer prompt
-        const userChoice = await inquirer.prompt(question);
+// //create main function
+// async function main() {
+//     try {
+//         //userChoice is response to inquirer prompt
+//         const userChoice = await inquirer.prompt(question);
 
-        let endPoint;
-        switch (userChoice.menuChoice) {
-            case "View All Employees":
-                endPoint = "employee"
-                break;
-            case "View All Roles":
-                endPoint = "roles"
-                break;
-            case "View All Departments":
-                endPoint = "department"
-                break;
+//         let endPoint;
+//         switch (userChoice.menuChoice) {
+//             case "View All Employees":
+//                 endPoint = "employee"
+//                 break;
+//             case "View All Roles":
+//                 endPoint = "roles"
+//                 break;
+//             case "View All Departments":
+//                 endPoint = "department"
+//                 break;
         
-            default:
-                endPoint = "employee";
-                break;
-        }
-        await queryDatabase(endPoint);
+//             default:
+//                 endPoint = "employee";
+//                 break;
+//         }
+//         await queryDatabase(endPoint);
     
-    } catch (err) {
+//     } catch (err) {
 
-    }
-};
+//     }
+// };
 
-main();
+// main();
 
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
+let endPoint = 'departments';
 
 const queryDatabase = (endPoint) => {
     app.get(`/${endPoint}`, (req, res) => {
-        const sql = `SELECT * FROM ${endPoint}`;
         
-        db.query(sql, function (err, results) {
+        db.query(`SELECT * FROM ${endPoint}`), function (err, results) {
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
@@ -107,41 +107,54 @@ const queryDatabase = (endPoint) => {
 
             // Log our request to the terminal
             console.info(`${req.method} request received to get ${endPoint}`);  
-        });
+        };
     });   
 }
 
-//get all roles
-app.get("/roles", (req, res) => {
-    const sql = `SELECT * FROM roles`;
+queryDatabase(endPoint);
+// //get all departments
+// app.get("/departments", (req, res) => {
+//     db.query(`SELECT * FROM department`, function (err, results) {
+//         if (err) {
+//             res.status(500).json({ error: err.message });
+//             return;
+//         }
+//         res.json({
+//             message: "success",
+//             data: results,
+//         });
+//     });
+// });
+// //get all roles
+// app.get("/roles", (req, res) => {
+//     const sql = `SELECT * FROM roles`;
 
-    db.query('SELECT * FROM roles', function (err, results) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: "success",
-            data: results,
-        });
-    });
-});
+//     db.query('SELECT * FROM roles', function (err, results) {
+//         if (err) {
+//             res.status(500).json({ error: err.message });
+//             return;
+//         }
+//         res.json({
+//             message: "success",
+//             data: results,
+//         });
+//     });
+// });
 
-// get all employees
-app.get("/employee", (req, res) => { // ... your code to fetch employees ... }); 
-    const sql = `SELECT * FROM employee`;
+// // get all employees
+// app.get("/employee", (req, res) => { // ... your code to fetch employees ... }); 
 
-    db.query(sql, function (err, results) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: "success",
-            data: body,
-        });
-    });
-});
+//     db.query(`SELECT * FROM employee`, function (err, results) {
+//         if (err) {
+//             res.status(500).json({ error: err.message });
+//             return;
+//         }
+//         res.json({
+//             message: "success",
+//             data: body,
+//         });
+//     });
+// });
 
     // Default response for any other request (Not Found)
 app.use((req, res) => {
