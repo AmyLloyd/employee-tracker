@@ -92,27 +92,47 @@ main();
 
 const queryDatabase = (endPoint) => {
     console.log(endPoint, 'endPoint under function declaration');
-    app.get(`/${endPoint}`, (req, res) => {
-        
-        db.query(`SELECT * FROM roles`), function (err, results) {
-            console.log(endPoint, "endPoint at dbquery");
-            console.log(results);
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
-            }
-            res.json({
-                message: "success",
-                data: results,
-            });
+    
+    const sql = `SELECT * FROM ${endPoint};`;
+
+    db.query(sql, (err, result) => {
+       
+        if (err) {
+         
+            console.log(err);
+          return;
+        }
+        console.log(result);
+      });
+
+        // db.query(`SELECT * FROM employee;`), function (err, results) {
+        //     console.log(endPoint, "endPoint at dbquery");
+        //     console.log(results);
+        //     if (err) {
+        //         res.status(500).json({ error: err.message });
+        //         return;
+        //     }
+        //     res.json({
+        //         message: "success",
+        //         data: results,
+        //     });
 
             // Log our request to the terminal
-            console.info(`${req.method} request received to get ${endPoint}`);  
-        };
-    });   
-}
+        //     console.info(`${req.method} request received to get ${endPoint}`);  
+        // };   
 
+};
 
+// db.query(sql, params, (err, result) => {
+//     if (err) {
+//       res.status(400).json({ error: err.message });
+//       return;
+//     }
+//     res.json({
+//       message: 'success',
+//       data: body
+//     });
+//   });
 // //get all departments
 // app.get("/departments", (req, res) => {
 //     db.query(`SELECT * FROM department`, function (err, results) {
