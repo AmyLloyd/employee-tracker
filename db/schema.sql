@@ -1,18 +1,15 @@
 -- creates the database --
-
 DROP DATABASE IF EXISTS employees_db;
 CREATE DATABASE employees_db;
-
 
 -- targets the database --
 USE employees_db;
 
 -- creates table including some relationships --
-
 DROP TABLE IF EXISTS department;
 CREATE TABLE department (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    department_name VARCHAR(30)
+    department_name VARCHAR(30) NOT NULL
 );
 
 DROP TABLE IF EXISTS roles;
