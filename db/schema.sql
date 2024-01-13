@@ -25,15 +25,15 @@ CREATE TABLE roles (
 
 DROP TABLE IF EXISTS employee;
 CREATE TABLE employee (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id INT UNIQUE AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(30),
     last_name VARCHAR(30),
     roles_id INT,
-    manager_id INT,
+    manager_id INT NULL,
     FOREIGN KEY (roles_id)
-    REFERENCES roles(id)
-    ON DELETE SET NULL,
+        REFERENCES roles(id)
+        ON DELETE SET NULL,
     FOREIGN KEY (manager_id)
-    REFERENCES employee(id)
-    ON DELETE SET NULL
+        REFERENCES employee(id)
+        ON DELETE SET NULL
 );
