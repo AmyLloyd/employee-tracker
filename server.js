@@ -10,9 +10,9 @@ const PORT = process.env.PORT || 3001;
 //use an instance of express server as app
 const app = express();
 
-// //Express middleware
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
+//Express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 //Connect to database 
 
@@ -28,149 +28,76 @@ const db = mysql.createConnection(
 
  const inquirer = require("inquirer");
 
- async function startApp() {
-     try {
-         const answer = await inquirer.prompt([
-             {
-                 type: "list",
-                 message: "What would you like to do?",
-                 name: "menuChoice",
-                 choices: ["View All Employees", "Add Employee"]
-             }
-         ]);
- 
-         console.log("User choice:", answer.menuChoice);
- 
-         // Add your logic based on userChoice here
- 
-     } catch (err) {
-         console.error("Error occurred:", err);
-     }
- }
- 
- // Call the asynchronous function to start the app
- startApp();
+ //import dotenv
+require('dotenv').config();
 
-// // import inquirer
-//  const inquirer = require("inquirer");
+//create main function
+const main = async () => {
+    try {
+        console.log("here");
+        //userChoice is response to inquirer prompt
+        const userChoice = 
+        await inquirer
+        .prompt([
+            {
+                type: "list",
+                message: "What would you like to do?",
+                name: "menuChoice",
+                choices: [
+                    "View All Employees",
+                    "Add Employee",
+                    "Update Employee Role",
+                    "View All Roles",
+                    "Add Role",
+                    "View All Departments",
+                    "Add Department"],
+            },
+        ]);
 
-// // Default response for any other request (Not Found)
-// app.use((req, res) => {
-//     res.status(404).end();
-// });
+        console.log(userChoice, "userChoice");
 
-// app.listen(PORT, () => {
-// console.log(`Server running on port ${PORT}`);
-// });
-
-// const menuChoices = [
-//     "View All Employees",
-//     "Add Employee",
-//     "Update Employee Role",
-//     "View All Roles",
-//     "Add Role",
-//     "View All Departments",
-//     "Add Department"
-// ];
-
-
-// //object for inquirer prompt
-// // const question = 
-// // [{
-// //     type: "list",
-// //     message: "What would you like to do?",
-// //     name: "menuChoice",
-// //     choices: menuChoices
-// // }],
-
-// const startApp = async() => {
-//     try {
-//         const answer = await inquirer.prompt([
-//             { 
-//                 type: "list",
-//                 message: "What would you like to do?",
-//                 name: "menuChoice",
-//                 choices: menuChoices
-//             }
-//         ]);
-
-//         console.log(answer);
-//         let userChoice = answer;
+        let endPoint;
+        switch (userChoice.menuChoice) {
+            case "View All Employees":
+                endPoint = "employee"
+                break;
+            case "Add Employee":
+                endPoint = "employee"
+                
+                break;
+            case "View All Roles":
+                endPoint = "roles"
+                break;
+            case "View All Departments":
+                endPoint = "department"
+                break;
+        
+            default:
+                endPoint = "employee";
+                break;
+        }
+        await queryDatabase(endPoint);
     
-//         console.log(userChoice);
+    } catch (err) {
+    }
+};
+main();
 
-//     // let sql;
-//     // let query;
-//     // let selectSql;
-//     // let insertSql;     
+//ROUTES FOR REQUESTS
+//query database for get all of a selected endPoint in table format
 
-//     // switch (userChoice.menuChoice) {            
-//     //     case "View All Employees":
-//     //         query = "employee";
-//     //         sql = selectSql;
-//     //         break;
-//     //     case "View All Role":
-//     //         query = "roles";
-//     //         sql = selectSql;
-//     //         break;
-//     //     case "View All Departments":
-//     //         query = "department";
-//     //         sql = selectSql;
-//     //         break;
-//     //     case "Add Employee":
-//     //         query = "employee";
-//     //         sql = insertSql;
-//     //         break;
-//     //     case "Add roles":
-//     //         query = "roles"
-//     //         sql = insertSql;
-//     //         break;
-//     //     case "Add department":
-//     //         query = "department"
-//     //         const departmentNameResponse = inquirer.prompt({
-//     //             type: 'input',
-//     //             name: 'departmentName',
-//     //             message: 'What is the name of the new deapartment to add?'
-//     //         });
-//     //         insertSql = `INSERT INTO ${query} (department_name) VALUES ( "${departmentNameResponse.departmentName}");`;
-//     //         break;
-//     //     default:
-//     //         query = "employee"
-//     //         break;
-//     // }
+const queryDatabase = (endPoint) => {
+    console.log(endPoint, 'endPoint under function declaration');
 
-//     // if (sql === insertSql) {
-//     //     queryDatabase(query);
-//     // } else {
-//     //     selectSql = `SELECT * FROM ${query};`;
-//     //     queryDatabase(query);
-//     // }
-//     } catch (err) {
-//         if (err.isTtyError) {
-//             console.log("Error couldn't be rendered in current environment", err);
-//         } else {
-//             console.log("Something else went wrong", err);
-//         }
-//     }
-// };
+    const sql = `SELECT * FROM ${endPoint};`;
 
-// startApp();
+    db.query(sql, (err, result) => {
 
-// //ROUTES FOR REQUESTS
-// //query database for get all of a selected endPoint in table format
+        if (err) {
 
-// // const queryDatabase = (endPoint) => {
-// //     console.log(endPoint, 'endPoint under function declaration');
-    
-// //     const sql = `SELECT * FROM ${endPoint};`;
-// //     // const sql = 'SELECT * FROM your_table';
-
-// //     db.query(sql, (err, result) => {
-       
-// //         if (err) {
-// //             console.log(err);
-// //         }
-
-// //         console.log(result);
-// //     });
-// // };
+            console.log(err);
+          return;
+        }
+        console.log(result);
+      });
+};
