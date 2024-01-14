@@ -6,5 +6,5 @@ SELECT * FROM department;
 SELECT * FROM roles;
 
 -- show all employees --
-SELECT * FROM employee
+SELECT * FROM employee;
 
