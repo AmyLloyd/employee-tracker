@@ -1,3 +1,4 @@
+
 //import dotenv
 require('dotenv').config();
 
@@ -7,15 +8,13 @@ const mysql = require('mysql2');
 //Connect to database 
 const db = mysql.createConnection(
     {
-        host: 'localhost',
-        //Mysql username,
-        user: process.env.DB_USER,
-        //My SQL password 
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME
+    host: 'localhost',
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     },
-
 );
+
 db.connect(function (error) {
     if(error) {
         console.log(error) 
@@ -48,12 +47,11 @@ const question =
 
 let endpoint;
 let method;
-
 //create main function
 async function main() {
-    try {
-        //userChoice is response to inquirer prompt
-        const userChoice = await inquirer.prompt(question);
+  try {
+    //userChoice is response to inquirer prompt
+    const userChoice = await inquirer.prompt(question);
         let endPoint;
         switch (userChoice.menuChoice) {
             case "View All Employees":
@@ -96,16 +94,13 @@ async function main() {
         console.error(err, "Error occurred")
     }
 };
-
 main();
 
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
-
 const selectQuery = async (endPoint) => {
     console.log(endPoint, 'endPoint');
     try {
-
         const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
         console.log(endPoint, "endPoint at dbquery");
 
