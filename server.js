@@ -1,21 +1,8 @@
 //import dotenv
 require('dotenv').config();
 
-//import express.js server
-const express = require('express');
-
 //Import and require mysql2
 const mysql = require('mysql2');
-
-//identify PORT for use in heroku and local host 3001
-const PORT = process.env.PORT || 3001;
-
-//use an instance of express server as app
-const app = express();
-
-//express middleware to translate and read languages
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 //Connect to database 
 const db = mysql.createConnection(
@@ -27,9 +14,14 @@ const db = mysql.createConnection(
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME
     },
-    console.log("Connected to the employee database.")
-);
 
+);
+db.connect(function (error) {
+    if(error) {
+        console.log(error) 
+        throw error; 
+    }
+});
 
 //import inquirer
 const inquirer = require("inquirer");
@@ -54,34 +46,54 @@ const question =
         choices: menuChoices,
     }];
 
-
+let endpoint;
+let method;
 
 //create main function
 async function main() {
     try {
         //userChoice is response to inquirer prompt
         const userChoice = await inquirer.prompt(question);
-
         let endPoint;
         switch (userChoice.menuChoice) {
             case "View All Employees":
                 endPoint = "employee"
+                method = "select"
+                selectQuery(endPoint);
                 break;
             case "View All Roles":
                 endPoint = "roles"
+                method = "select"
                 break;
             case "View All Departments":
                 endPoint = "department"
+                method = "select"
                 break;
-        
+            case "Add Employee":
+                endPoint = "employee"
+                method = "insert"
+                addEmployee();
+                break;
+            case "Add Role":
+                endPoint = "roles"
+                method = "insert"
+                break;
+            case "Add department":
+                endPoint = "department"
+                method = "insert"
+                break;
+            case "Update Employee Role":
+                endPoint = "employee"
+                method = "update"
+                break;
             default:
                 endPoint = "employee";
+                method = "select"
                 break;
         }
-        await queryDatabase(endPoint);
-    
-    } catch (err) {
 
+    } catch (err) {
+        console.error(err, "Error occurred")
     }
 };
 
@@ -90,11 +102,58 @@ main();
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
 
-const queryDatabase = (endPoint) => {
-    console.log(endPoint, 'endPoint under function declaration');
-    app.get(`/${endPoint}`, (req, res) => {
-        
-        db.query(`SELECT * FROM roles`), function (err, results) {
+const selectQuery = async (endPoint) => {
+    console.log(endPoint, 'endPoint');
+    try {
+
+        const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
+        console.log(endPoint, "endPoint at dbquery");
+
+        console.table(results);
+        main();
+    
+    } catch(err) {
+        console.log(err);
+    }
+};   
+
+const addEmployee = async () => {
+    try {
+
+        const [employees] = await db.promise().query(`SELECT * FROM employee`);
+        const [roles] = await db.promise().query(`SELECT * FROM roles`);
+        const userChoice = await inquirer.prompt([{
+            type: "input",
+            message: "What is the employees first name?",
+            name: "first_name",
+        },
+        {
+            type: "input",
+            message: "What is the employees last name?",
+            name: "last_name", 
+        },
+        {
+            type: "list",
+            message: "Please select a role from the list below.",
+            name: "role_id",   
+            choices: roles.map(({id, title }) => ({value: id, name: title}))
+        }
+    ]);
+
+
+    
+    } catch(err) {
+        console.log(err);
+    }   
+}
+
+const insertQuery = (endPoint) => {
+    console.log('insertQuery begins')
+    app.post(`/${endPoint}`, (req, res) => {
+        const sql = `INSERT INTO ${endPoint}
+        VALUES (?)`;
+        //requires structure: INSERT INTO users (first_name, last_name, email, password, location, dept, is_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
+        db.query(sql, params, function (err, results) {
             console.log(endPoint, "endPoint at dbquery");
             console.log(results);
             if (err) {
@@ -108,60 +167,33 @@ const queryDatabase = (endPoint) => {
 
             // Log our request to the terminal
             console.info(`${req.method} request received to get ${endPoint}`);  
-        };
+            //Log results to the terminal
+            console.table(results);
+            main();
+        });
     });   
 }
 
+const updateQuery = (endPoint) => {
+    console.log(endPoint, 'endPoint');
+    app.put(`/${endPoint}`, (req, res) => {
+        //Needs structure: UPDATE users SET email = 'freddy@gmail.com' WHERE id = 2;
+        db.query(`UPDATE ${endPoint} SET ${endPoint} WHERE `), function (err, results) {
 
-// //get all departments
-// app.get("/departments", (req, res) => {
-//     db.query(`SELECT * FROM department`, function (err, results) {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: "success",
-//             data: results,
-//         });
-//     });
-// });
-// //get all roles
-// app.get("/roles", (req, res) => {
-//     const sql = `SELECT * FROM roles`;
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({
+                message: "success",
+                data: results,
+            });
 
-//     db.query('SELECT * FROM roles', function (err, results) {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: "success",
-//             data: results,
-//         });
-//     });
-// });
-
-// // get all employees
-// app.get("/employee", (req, res) => { // ... your code to fetch employees ... }); 
-
-//     db.query(`SELECT * FROM employee`, function (err, results) {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: "success",
-//             data: body,
-//         });
-//     });
-// });
-
-    // Default response for any other request (Not Found)
-app.use((req, res) => {
-    res.status(404).end();
-  });
-  
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+            // Log our request to the terminal
+            console.info(`${req.method} request received to get ${endPoint}`);  
+            //Log results to the terminal
+            console.table(results);
+            main();
+        };
+    });   
+}
