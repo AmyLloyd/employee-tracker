@@ -135,13 +135,16 @@ const addEmployee = async () => {
         {
             type: "list",
             message: "Please select a role from the list below.",
-            name: "role_id",   
-            choices: roles.map(({id, title }) => ({value: id, name: title}))
+            name: "roles_id",   
+            choices: roles.map(({id, title }) => ({ value: id, name: title }))
+        },
+        {
+            type: "list",
+            message: "Who is the employee's manager?",
+            name: "manager_id",   
+            choices: employees.map(({ id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}`}))
         }
-    ]);
-
-
-    
+        ])
     } catch(err) {
         console.log(err);
     }   
