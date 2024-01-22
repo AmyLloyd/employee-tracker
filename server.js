@@ -83,9 +83,10 @@ async function main() {
             case "Update Employee Role":
                 endPoint = "employee"
                 method = "update"
+                updateEmployee();
                 break;
             default:
-                endPoint = "employee";
+                endPoint = "employee"
                 method = "select"
                 break;
         }
@@ -98,11 +99,13 @@ main();
 
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
+//Use this endpoint for View all employees: SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department,
+ //roles.salary FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
+ //id = department.id);
+ //Need to add last column of manager but this works. 
 const selectQuery = async (endPoint) => {
-    console.log(endPoint, 'endPoint');
     try {
-        const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
-        console.log(endPoint, "endPoint at dbquery");
+        const [results] = await db.promise().query(`SELECT *, ${roles.title} FROM ${endPoint} INNER JOIN ${roles} ON ${endPoint}.roles_id = roles.id`);
 
         console.table(results);
         main();
@@ -140,6 +143,38 @@ const addEmployee = async () => {
             choices: employees.map(({ id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}`}))
         }
         ])
+
+        main();
+
+    } catch(err) {
+        console.log(err);
+    }   
+}
+
+const updateEmployee = async () => {
+    try {
+        const [employees] = await db.promise().query(`SELECT * FROM employee`);
+        const [roles] = await db.promise().query(`SELECT * FROM roles`);
+        const userChoice = await inquirer.prompt([
+            {
+                type: "list",
+                message: "Please select an employee from the list below.",
+                name: "employee_id",   
+                choices: employees.map(({id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}` }))
+            },
+            {
+                type: "list",
+                message: `Please select a new role for the employee:`,
+                name: "role_id",
+                choices: roles.map(({ id, title }) => ({ value: id, name: title }))
+            }
+
+            
+        ])
+        console.log("Updated employee's role");
+
+        main();
+
     } catch(err) {
         console.log(err);
     }   
@@ -173,7 +208,6 @@ const insertQuery = (endPoint) => {
 }
 
 const updateQuery = (endPoint) => {
-    console.log(endPoint, 'endPoint');
     app.put(`/${endPoint}`, (req, res) => {
         //Needs structure: UPDATE users SET email = 'freddy@gmail.com' WHERE id = 2;
         db.query(`UPDATE ${endPoint} SET ${endPoint} WHERE `), function (err, results) {
