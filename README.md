@@ -33,21 +33,17 @@ npm start
 
 You will be prompted to answer questions that will allow you to fill your database and manipulate and access that data.
 
+---------
+
+Here is a screenshot of what to expect:
+![Employee-tracker screenshot](assets/Employee%20tracker%20screenshot.png)
 
 
 To see the Employee Tracker in action, watch: 
+https://app.screencastify.com/v3/watch/TaZWrkI6Ft1owK6uN7Wk 
 
-
-
-To use the password generator, go to this link: https://create-88.github.io/code-quiz/ 
-
-![code-quiz home screen](assets/images/Home%20screen%20code-quiz.PNG)
-![code-quiz question screen](assets/images/Question%20screen%20code-quiz.PNG)
-
-Click on the START button to begin the quiz.
-Answer the questions on each screen. 
-When you submit your initials you will find out if you have achieved a high score. 
-Refresh to return to try to beat your score.
+To get in touch or view the code, go to:
+https://github.com/AmyLloyd/employee-tracker 
 
 ## Credits
 Bootcamp tutors were helpful in working out promises.
