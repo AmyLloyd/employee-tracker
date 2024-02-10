@@ -56,8 +56,7 @@ async function main() {
         switch (userChoice.menuChoice) {
             case "View All Employees":
                 endPoint = "employee"
-                // method = "select"
-                selectQuery(endPoint);
+                viewAllEmployee();
                 break;
             case "View All Roles":
                 endPoint = "roles"
@@ -99,18 +98,11 @@ async function main() {
 main();
 
 //ROUTES FOR REQUESTS
-//query database for get all of a selected endPoint in table format
-//Use this endpoint for View all employees: SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department,
- //roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
- //id = department.id);
- //Need to add last column of manager but this works. 
 const selectQuery = async (endPoint) => {
     try {
-        //const [roles] = await db.promise().query(`SELECT * FROM roles`);
+     
         const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
-        //const [results] = await db.promise().query(`SELECT *, ${roles.title} FROM ${endPoint} INNER JOIN ${roles} ON ${endPoint}.roles_id = roles.id`);
 
-        //const [results] = await db.promise().query(`SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department, roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_id = department.id);`);
         console.table(results);
         main();
     
@@ -118,6 +110,20 @@ const selectQuery = async (endPoint) => {
         console.log(err);
     }
 };   
+
+const viewAllEmployee = async () => {
+    try {
+        const [results] = await db.promise().query(`SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department,
+        //roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
+        //id = department.id);`);
+
+        console.table(results);
+        main();
+
+    } catch (err) {
+        console.log(err);
+    }
+};
 
 const addEmployee = async () => {
     try {
@@ -160,7 +166,7 @@ const addEmployee = async () => {
     } catch(err) {
         console.log(err);
     }   
-}
+};
 
 const addDepartment = async () => {
     try {
@@ -185,13 +191,12 @@ const addDepartment = async () => {
     } catch(err) {
         console.log(err);
     }   
-}
+};
 
 const addRole = async () => {
     try {
 
         const [departments] = await db.promise().query(`SELECT * FROM department`);
-       
         const userChoice = await inquirer.prompt([{
             type: "input",
             message: "What is the title of the new role?",
@@ -223,7 +228,7 @@ const addRole = async () => {
     } catch(err) {
         console.log(err);
     }   
-}
+};
 
 const updateEmployee = async () => {
     try {
@@ -243,14 +248,12 @@ const updateEmployee = async () => {
                 name: "role_id",
                 choices: roles.map(({ id, title }) => ({ value: id, name: title }))
             }
-
-            
         ])
         console.log("Updated employee's role");
 
         const [results] = await db.promise().query(`UPDATE employee SET roles_id = ${userChoice.role_id} WHERE id = ${userChoice.employee_id};`);
 
-        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title FROM employee INNER JOIN roles ON roles.id = employee.roles_id;`);
+        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, roles.salary FROM employee INNER JOIN roles ON roles.id = employee.roles_id;`);
 
         console.table(updatedRoles);
 
@@ -261,31 +264,3 @@ const updateEmployee = async () => {
         console.log(err);
     }   
 }
-
-// const insertQuery = (endPoint) => {
-//     console.log('insertQuery begins')
-//     app.post(`/${endPoint}`, (req, res) => {
-//         const sql = `INSERT INTO ${endPoint}
-//         VALUES (?)`;
-//         requires structure: INSERT INTO users (first_name, last_name, email, password, location, dept, is_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
-//         db.query(sql, params, function (err, results) {
-//             console.log(endPoint, "endPoint at dbquery");
-//             console.log(results);
-//             if (err) {
-//                 res.status(500).json({ error: err.message });
-//                 return;
-//             }
-//             res.json({
-//                 message: "success",
-//                 data: results,
-//             });
-
-//             Log our request to the terminal
-//             console.info(`${req.method} request received to get ${endPoint}`);  
-//             Log results to the terminal
-//             console.table(results);
-//             main();
-//         });
-//     });   
-// }
-
