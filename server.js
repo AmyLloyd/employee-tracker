@@ -56,7 +56,7 @@ async function main() {
         switch (userChoice.menuChoice) {
             case "View All Employees":
                 endPoint = "employee"
-                viewAllEmployee();
+                viewAllEmployees();
                 break;
             case "View All Roles":
                 endPoint = "roles"
@@ -111,11 +111,10 @@ const selectQuery = async (endPoint) => {
     }
 };   
 
-const viewAllEmployee = async () => {
+const viewAllEmployees = async () => {
     try {
-        const [results] = await db.promise().query(`SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department,
-        //roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
-        //id = department.id);`);
+        const [results] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, department.department_name AS department,
+        roles.salary, employee.manager_id AS manager FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_id = department.id);`);
 
         console.table(results);
         main();
@@ -157,7 +156,9 @@ const addEmployee = async () => {
         const [results] = await db.promise().query(`INSERT INTO employee(first_name, last_name, roles_id, manager_id)
         values ('${userChoice.first_name}', '${userChoice.last_name}', ${userChoice.roles_id}, ${userChoice.manager_id});`);
 
-        const [updatedEmployees] = await db.promise().query(`SELECT * FROM employee`);
+        console.log('Employee added');
+
+        const [updatedEmployees] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, employee.manager_id FROM employee INNER JOIN roles ON roles.id = employee.roles_id`);
 
         console.table(updatedEmployees);
 
@@ -253,7 +254,7 @@ const updateEmployee = async () => {
 
         const [results] = await db.promise().query(`UPDATE employee SET roles_id = ${userChoice.role_id} WHERE id = ${userChoice.employee_id};`);
 
-        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, roles.salary FROM employee INNER JOIN roles ON roles.id = employee.roles_id;`);
+        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, roles.salary FROM employee INNER JOIN roles ON roles.id = employee.roles_id WHERE employee.id = ${userChoice.employee_id};`);
 
         console.table(updatedRoles);
 
