@@ -224,25 +224,11 @@ const addRole = async () => {
         console.log(err);
     }   
 }
-// const insertQuery = async (userChoice) => {
-//     try {
-//         console.log('here in insertQuery');
-//         console.log(`${userChoice.first_name}`);
-//         //const [roles] = await db.promise().query(`SELECT * FROM roles`);
-//         const [results] = await db.promise().query(`INSERT INTO employee(first_name, last_name, roles_id, manager_id)
-//         values ('${userChoice.first_name}', '${userChoice.last_name}', ${userChoice.roles_id}, ${userChoice.manager_id});`);
-
-//         console.table([results]);
-//          //_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
-    
-//     } catch(err) {
-//         console.log(err);
-//     }
-// };   
 
 const updateEmployee = async () => {
     try {
         const [employees] = await db.promise().query(`SELECT * FROM employee`);
+        console.log(employees);
         const [roles] = await db.promise().query(`SELECT * FROM roles`);
         const userChoice = await inquirer.prompt([
             {
@@ -262,7 +248,14 @@ const updateEmployee = async () => {
         ])
         console.log("Updated employee's role");
 
+        const [results] = await db.promise().query(`UPDATE employee SET roles_id = ${userChoice.role_id} WHERE id = ${userChoice.employee_id};`);
+
+        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title FROM employee INNER JOIN roles ON roles.id = employee.roles_id;`);
+
+        console.table(updatedRoles);
+
         main();
+
 
     } catch(err) {
         console.log(err);
