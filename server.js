@@ -56,20 +56,21 @@ async function main() {
         switch (userChoice.menuChoice) {
             case "View All Employees":
                 endPoint = "employee"
-                method = "select"
+                // method = "select"
                 selectQuery(endPoint);
                 break;
             case "View All Roles":
                 endPoint = "roles"
-                method = "select"
+                // method = "select"
+                selectQuery(endPoint);
                 break;
             case "View All Departments":
                 endPoint = "department"
-                method = "select"
+                // method = "select"
+                selectQuery(endPoint);
                 break;
             case "Add Employee":
                 endPoint = "employee"
-                method = "insert"
                 addEmployee();
                 break;
             case "Add Role":
@@ -100,13 +101,16 @@ main();
 //ROUTES FOR REQUESTS
 //query database for get all of a selected endPoint in table format
 //Use this endpoint for View all employees: SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department,
- //roles.salary FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
+ //roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_
  //id = department.id);
  //Need to add last column of manager but this works. 
 const selectQuery = async (endPoint) => {
     try {
-        const [results] = await db.promise().query(`SELECT *, ${roles.title} FROM ${endPoint} INNER JOIN ${roles} ON ${endPoint}.roles_id = roles.id`);
+        //const [roles] = await db.promise().query(`SELECT * FROM roles`);
+        const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
+        //const [results] = await db.promise().query(`SELECT *, ${roles.title} FROM ${endPoint} INNER JOIN ${roles} ON ${endPoint}.roles_id = roles.id`);
 
+        //const [results] = await db.promise().query(`SELECT employee.id, employee.first_name, employee.last_name, roles.title, department.department_name AS department, roles.salary, employee.manager_id FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_id = department.id);`);
         console.table(results);
         main();
     
@@ -142,7 +146,14 @@ const addEmployee = async () => {
             name: "manager_id",   
             choices: employees.map(({ id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}`}))
         }
-        ])
+        ])       
+
+        const [results] = await db.promise().query(`INSERT INTO employee(first_name, last_name, roles_id, manager_id)
+        values ('${userChoice.first_name}', '${userChoice.last_name}', ${userChoice.roles_id}, ${userChoice.manager_id});`);
+
+        const [updatedEmployees] = await db.promise().query(`SELECT * FROM employee`);
+
+        console.table(updatedEmployees);
 
         main();
 
@@ -150,6 +161,22 @@ const addEmployee = async () => {
         console.log(err);
     }   
 }
+
+// const insertQuery = async (userChoice) => {
+//     try {
+//         console.log('here in insertQuery');
+//         console.log(`${userChoice.first_name}`);
+//         //const [roles] = await db.promise().query(`SELECT * FROM roles`);
+//         const [results] = await db.promise().query(`INSERT INTO employee(first_name, last_name, roles_id, manager_id)
+//         values ('${userChoice.first_name}', '${userChoice.last_name}', ${userChoice.roles_id}, ${userChoice.manager_id});`);
+
+//         console.table([results]);
+//          //_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
+    
+//     } catch(err) {
+//         console.log(err);
+//     }
+// };   
 
 const updateEmployee = async () => {
     try {
@@ -180,52 +207,30 @@ const updateEmployee = async () => {
     }   
 }
 
-const insertQuery = (endPoint) => {
-    console.log('insertQuery begins')
-    app.post(`/${endPoint}`, (req, res) => {
-        const sql = `INSERT INTO ${endPoint}
-        VALUES (?)`;
-        //requires structure: INSERT INTO users (first_name, last_name, email, password, location, dept, is_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
-        db.query(sql, params, function (err, results) {
-            console.log(endPoint, "endPoint at dbquery");
-            console.log(results);
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
-            }
-            res.json({
-                message: "success",
-                data: results,
-            });
+// const insertQuery = (endPoint) => {
+//     console.log('insertQuery begins')
+//     app.post(`/${endPoint}`, (req, res) => {
+//         const sql = `INSERT INTO ${endPoint}
+//         VALUES (?)`;
+//         requires structure: INSERT INTO users (first_name, last_name, email, password, location, dept, is_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
+//         db.query(sql, params, function (err, results) {
+//             console.log(endPoint, "endPoint at dbquery");
+//             console.log(results);
+//             if (err) {
+//                 res.status(500).json({ error: err.message });
+//                 return;
+//             }
+//             res.json({
+//                 message: "success",
+//                 data: results,
+//             });
 
-            // Log our request to the terminal
-            console.info(`${req.method} request received to get ${endPoint}`);  
-            //Log results to the terminal
-            console.table(results);
-            main();
-        });
-    });   
-}
+//             Log our request to the terminal
+//             console.info(`${req.method} request received to get ${endPoint}`);  
+//             Log results to the terminal
+//             console.table(results);
+//             main();
+//         });
+//     });   
+// }
 
-const updateQuery = (endPoint) => {
-    app.put(`/${endPoint}`, (req, res) => {
-        //Needs structure: UPDATE users SET email = 'freddy@gmail.com' WHERE id = 2;
-        db.query(`UPDATE ${endPoint} SET ${endPoint} WHERE `), function (err, results) {
-
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
-            }
-            res.json({
-                message: "success",
-                data: results,
-            });
-
-            // Log our request to the terminal
-            console.info(`${req.method} request received to get ${endPoint}`);  
-            //Log results to the terminal
-            console.table(results);
-            main();
-        };
-    });   
-}
