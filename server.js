@@ -56,36 +56,37 @@ async function main() {
         switch (userChoice.menuChoice) {
             case "View All Employees":
                 endPoint = "employee"
-                method = "select"
-                selectQuery(endPoint);
+                viewAllEmployees();
                 break;
             case "View All Roles":
                 endPoint = "roles"
-                method = "select"
+                // method = "select"
+                selectQuery(endPoint);
                 break;
             case "View All Departments":
                 endPoint = "department"
-                method = "select"
+                // method = "select"
+                selectQuery(endPoint);
                 break;
             case "Add Employee":
                 endPoint = "employee"
-                method = "insert"
                 addEmployee();
                 break;
             case "Add Role":
                 endPoint = "roles"
-                method = "insert"
+                addRole();
                 break;
-            case "Add department":
+            case "Add Department":
                 endPoint = "department"
-                method = "insert"
+                addDepartment();
                 break;
             case "Update Employee Role":
                 endPoint = "employee"
                 method = "update"
+                updateEmployee();
                 break;
             default:
-                endPoint = "employee";
+                endPoint = "employee"
                 method = "select"
                 break;
         }
@@ -97,12 +98,10 @@ async function main() {
 main();
 
 //ROUTES FOR REQUESTS
-//query database for get all of a selected endPoint in table format
 const selectQuery = async (endPoint) => {
-    console.log(endPoint, 'endPoint');
     try {
+     
         const [results] = await db.promise().query(`SELECT * FROM ${endPoint}`);
-        console.log(endPoint, "endPoint at dbquery");
 
         console.table(results);
         main();
@@ -111,6 +110,19 @@ const selectQuery = async (endPoint) => {
         console.log(err);
     }
 };   
+
+const viewAllEmployees = async () => {
+    try {
+        const [results] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, department.department_name AS department,
+        roles.salary, employee.manager_id AS manager FROM ((employee INNER JOIN roles ON employee.roles_id = roles.id) INNER JOIN department ON roles.department_id = department.id);`);
+
+        console.table(results);
+        main();
+
+    } catch (err) {
+        console.log(err);
+    }
+};
 
 const addEmployee = async () => {
     try {
@@ -139,59 +151,117 @@ const addEmployee = async () => {
             name: "manager_id",   
             choices: employees.map(({ id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}`}))
         }
-        ])
+        ])       
+
+        const [results] = await db.promise().query(`INSERT INTO employee(first_name, last_name, roles_id, manager_id)
+        values ('${userChoice.first_name}', '${userChoice.last_name}', ${userChoice.roles_id}, ${userChoice.manager_id});`);
+
+        console.log('Employee added');
+
+        const [updatedEmployees] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, employee.manager_id FROM employee INNER JOIN roles ON roles.id = employee.roles_id`);
+
+        console.table(updatedEmployees);
+
+        main();
+
     } catch(err) {
         console.log(err);
     }   
-}
+};
 
-const insertQuery = (endPoint) => {
-    console.log('insertQuery begins')
-    app.post(`/${endPoint}`, (req, res) => {
-        const sql = `INSERT INTO ${endPoint}
-        VALUES (?)`;
-        //requires structure: INSERT INTO users (first_name, last_name, email, password, location, dept, is_admin, register_date) values ('Brad', 'Traversy', 'brad@gmail.com', '123456','Massachusetts', 'development', 1, now());
-        db.query(sql, params, function (err, results) {
-            console.log(endPoint, "endPoint at dbquery");
-            console.log(results);
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+const addDepartment = async () => {
+    try {
+        console.log('addDepartment function running');
+        const userChoice = await inquirer.prompt([
+            {
+            type: "input",
+            message: "What is the name of the new department?",
+            name: "department_name",
             }
-            res.json({
-                message: "success",
-                data: results,
-            });
+        ])       
 
-            // Log our request to the terminal
-            console.info(`${req.method} request received to get ${endPoint}`);  
-            //Log results to the terminal
-            console.table(results);
-            main();
-        });
-    });   
-}
+        const [results] = await db.promise().query(`INSERT INTO department(department_name)
+        values ('${userChoice.department_name}')`);
 
-const updateQuery = (endPoint) => {
-    console.log(endPoint, 'endPoint');
-    app.put(`/${endPoint}`, (req, res) => {
-        //Needs structure: UPDATE users SET email = 'freddy@gmail.com' WHERE id = 2;
-        db.query(`UPDATE ${endPoint} SET ${endPoint} WHERE `), function (err, results) {
+        const [updatedDepartments] = await db.promise().query(`SELECT * FROM department`);
 
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+        console.table(updatedDepartments);
+
+        main();
+
+    } catch(err) {
+        console.log(err);
+    }   
+};
+
+const addRole = async () => {
+    try {
+
+        const [departments] = await db.promise().query(`SELECT * FROM department`);
+        const userChoice = await inquirer.prompt([{
+            type: "input",
+            message: "What is the title of the new role?",
+            name: "title",
+        },
+        {
+            type: "input",
+            message: "What is the salary of the new role?",
+            name: "salary", 
+            default: "Enter salary in this form: 30000",
+        },
+        {
+            type: "list",
+            message: "Please select the department for the new role.",
+            name: "department_id",   
+            choices: departments.map(({id, department_name }) => ({ value: id, name: department_name }))
+        }
+        ])       
+
+        const [results] = await db.promise().query(`INSERT INTO roles(title, salary, department_id)
+        values ('${userChoice.title}', ${userChoice.salary}, ${userChoice.department_id});`);
+
+        const [updatedRoles] = await db.promise().query(`SELECT * FROM roles`);
+
+        console.table(updatedRoles);
+
+        main();
+
+    } catch(err) {
+        console.log(err);
+    }   
+};
+
+const updateEmployee = async () => {
+    try {
+        const [employees] = await db.promise().query(`SELECT * FROM employee`);
+        console.log(employees);
+        const [roles] = await db.promise().query(`SELECT * FROM roles`);
+        const userChoice = await inquirer.prompt([
+            {
+                type: "list",
+                message: "Please select an employee from the list below.",
+                name: "employee_id",   
+                choices: employees.map(({id, first_name, last_name }) => ({ value: id, name: `${first_name} ${last_name}` }))
+            },
+            {
+                type: "list",
+                message: `Please select a new role for the employee:`,
+                name: "role_id",
+                choices: roles.map(({ id, title }) => ({ value: id, name: title }))
             }
-            res.json({
-                message: "success",
-                data: results,
-            });
+        ])
+        console.log("Updated employee's role");
 
-            // Log our request to the terminal
-            console.info(`${req.method} request received to get ${endPoint}`);  
-            //Log results to the terminal
-            console.table(results);
-            main();
-        };
-    });   
+        const [results] = await db.promise().query(`UPDATE employee SET roles_id = ${userChoice.role_id} WHERE id = ${userChoice.employee_id};`);
+
+        const [updatedRoles] = await db.promise().query(`SELECT employee.first_name, employee.last_name, roles.title, roles.salary FROM employee INNER JOIN roles ON roles.id = employee.roles_id WHERE employee.id = ${userChoice.employee_id};`);
+
+        console.table(updatedRoles);
+
+        main();
+
+
+    } catch(err) {
+        console.log(err);
+    }   
 }
