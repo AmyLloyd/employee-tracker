@@ -75,11 +75,11 @@ async function main() {
                 break;
             case "Add Role":
                 endPoint = "roles"
-                method = "insert"
+                addRole();
                 break;
-            case "Add department":
+            case "Add Department":
                 endPoint = "department"
-                method = "insert"
+                addDepartment();
                 break;
             case "Update Employee Role":
                 endPoint = "employee"
@@ -162,6 +162,68 @@ const addEmployee = async () => {
     }   
 }
 
+const addDepartment = async () => {
+    try {
+        console.log('addDepartment function running');
+        const userChoice = await inquirer.prompt([
+            {
+            type: "input",
+            message: "What is the name of the new department?",
+            name: "department_name",
+            }
+        ])       
+
+        const [results] = await db.promise().query(`INSERT INTO department(department_name)
+        values ('${userChoice.department_name}')`);
+
+        const [updatedDepartments] = await db.promise().query(`SELECT * FROM department`);
+
+        console.table(updatedDepartments);
+
+        main();
+
+    } catch(err) {
+        console.log(err);
+    }   
+}
+
+const addRole = async () => {
+    try {
+
+        const [departments] = await db.promise().query(`SELECT * FROM department`);
+       
+        const userChoice = await inquirer.prompt([{
+            type: "input",
+            message: "What is the title of the new role?",
+            name: "title",
+        },
+        {
+            type: "input",
+            message: "What is the salary of the new role?",
+            name: "salary", 
+            default: "Enter salary in this form: 30000",
+        },
+        {
+            type: "list",
+            message: "Please select the department for the new role.",
+            name: "department_id",   
+            choices: departments.map(({id, department_name }) => ({ value: id, name: department_name }))
+        }
+        ])       
+
+        const [results] = await db.promise().query(`INSERT INTO roles(title, salary, department_id)
+        values ('${userChoice.title}', ${userChoice.salary}, ${userChoice.department_id});`);
+
+        const [updatedRoles] = await db.promise().query(`SELECT * FROM roles`);
+
+        console.table(updatedRoles);
+
+        main();
+
+    } catch(err) {
+        console.log(err);
+    }   
+}
 // const insertQuery = async (userChoice) => {
 //     try {
 //         console.log('here in insertQuery');
